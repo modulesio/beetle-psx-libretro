@@ -152,7 +152,7 @@ ifneq ($(HAVE_GRIFFIN), 1)
                   $(CORE_EMU_DIR)/dma.cpp \
                   $(CORE_EMU_DIR)/frontio.cpp \
                   $(CORE_EMU_DIR)/sio.cpp \
-                  $(CORE_EMU_DIR)/cpu.cpp \
+                  $(CORE_EMU_DIR)/cpu2.cpp \
                   $(CORE_EMU_DIR)/gte.cpp \
                   $(CORE_EMU_DIR)/cdc.cpp \
                   $(CORE_EMU_DIR)/spu.cpp \
@@ -208,7 +208,7 @@ ifneq ($(HAVE_GRIFFIN), 1)
                   $(CORE_DIR)/input.cpp
 
    SOURCES_C +=   $(CORE_DIR)/rsx/rsx_lib_soft.c \
-                  $(MEDNAFEN_DIR)/md5.c
+                  $(MEDNAFEN_DIR)/md52.c
 
    SOURCES_CXX += $(CORE_DIR)/rsx/rsx_intf.cpp
 
@@ -264,7 +264,7 @@ SOURCES_C +=   $(LIBKIRK_DIR)/aes.c \
                $(LIBKIRK_DIR)/des.c \
                $(LIBKIRK_DIR)/ec.c \
                $(LIBKIRK_DIR)/kirk_engine.c \
-               $(LIBKIRK_DIR)/sha1.c
+               $(LIBKIRK_DIR)/sha12.c
 
 SOURCES_C +=   $(CORE_DIR)/pgxp/pgxp_cpu.c \
                $(CORE_DIR)/pgxp/pgxp_debug.c \
@@ -291,7 +291,7 @@ ifeq ($(HAVE_CHD), 1)
                   $(DEPS_DIR)/flac-1.3.2/src/libFLAC/lpc_intrin_sse2.c \
                   $(DEPS_DIR)/flac-1.3.2/src/libFLAC/lpc_intrin_sse41.c \
                   $(DEPS_DIR)/flac-1.3.2/src/libFLAC/lpc_intrin_sse.c \
-                  $(DEPS_DIR)/flac-1.3.2/src/libFLAC/md5.c \
+                  $(DEPS_DIR)/flac-1.3.2/src/libFLAC/md53.c \
                   $(DEPS_DIR)/flac-1.3.2/src/libFLAC/memory.c \
                   $(DEPS_DIR)/flac-1.3.2/src/libFLAC/metadata_iterators.c \
                   $(DEPS_DIR)/flac-1.3.2/src/libFLAC/metadata_object.c \
