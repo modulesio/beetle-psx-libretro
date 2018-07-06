@@ -31,10 +31,10 @@
 
 RETRO_BEGIN_DECLS
 
-#ifdef HAVE_OPENGLES2
+/* #ifdef HAVE_OPENGLES2
 typedef GLfloat GLdouble;
 typedef GLclampf GLclampd;
-#endif
+#endif */
 
 #if defined(HAVE_OPENGLES2)
 #define RARCH_GL_RENDERBUFFER GL_RENDERBUFFER

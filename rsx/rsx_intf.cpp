@@ -7,9 +7,7 @@
 #include "rsx_intf.h"
 #include "rsx.h"
 #include "../libretro_cbs.h"
-#ifdef HAVE_OPENGL
-   #include "rsx_lib_gl.h"
-#endif
+#include "rsx_lib_gl.h"
 #ifdef HAVE_VULKAN
    #include "rsx_lib_vulkan.h"
 #endif
