@@ -624,11 +624,13 @@ static void DrawBuffer_push_slice(DrawBuffer<T> *drawbuffer, T slice[], size_t n
       return;
 
    assert(n <= DRAWBUFFER_REMAINING_CAPACITY(drawbuffer));
-   assert(drawbuffer->map != NULL);
+   // assert(drawbuffer->map != NULL);
 
-   memcpy(  drawbuffer->map + drawbuffer->map_index,
+   glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
+   glBufferSubData(GL_ARRAY_BUFFER, drawbuffer->map_index * sizeof(T), n * sizeof(T), slice);
+   /* memcpy(  drawbuffer->map + drawbuffer->map_index,
             slice,
-            n * sizeof(T));
+            n * sizeof(T)); */
 
    drawbuffer->map_index += n;
 }
@@ -638,7 +640,7 @@ static void DrawBuffer_draw(DrawBuffer<T> *drawbuffer, GLenum mode)
 {
    glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
    /* Unmap the active buffer */
-   glUnmapBuffer(GL_ARRAY_BUFFER);
+   // glUnmapBuffer(GL_ARRAY_BUFFER);
 
    drawbuffer->map = NULL;
 
@@ -668,7 +670,7 @@ static void DrawBuffer_map__no_bind(DrawBuffer<T> *drawbuffer)
    glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
 
    /* If we're already mapped something's wrong */
-   assert(drawbuffer->map == NULL);
+   // assert(drawbuffer->map == NULL);
 
    /* We don't have enough room left to remap 'capacity',
     * start back from the beginning of the buffer. */
@@ -677,7 +679,7 @@ static void DrawBuffer_map__no_bind(DrawBuffer<T> *drawbuffer)
 
    offset_bytes = drawbuffer->map_start * element_size;
 
-   m = glMapBufferRange(GL_ARRAY_BUFFER,
+   /* m = glMapBufferRange(GL_ARRAY_BUFFER,
          offset_bytes,
          buffer_size,
          GL_MAP_WRITE_BIT |
@@ -685,7 +687,7 @@ static void DrawBuffer_map__no_bind(DrawBuffer<T> *drawbuffer)
 
    assert(m != NULL);
 
-   drawbuffer->map = reinterpret_cast<T *>(m);
+   drawbuffer->map = reinterpret_cast<T *>(m); */
 }
 
 template<typename T>
@@ -696,7 +698,7 @@ static void DrawBuffer_free(DrawBuffer<T> *drawbuffer)
 
    /* Unmap the active buffer */
    glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
-   glUnmapBuffer(GL_ARRAY_BUFFER);
+   // glUnmapBuffer(GL_ARRAY_BUFFER);
 
    Program_free(drawbuffer->program);
    glDeleteBuffers(1, &drawbuffer->id);
@@ -982,7 +984,7 @@ static void GlRenderer_draw(GlRenderer *renderer)
 
    /* Bind and unmap the command buffer */
    glBindBuffer(GL_ARRAY_BUFFER, renderer->command_buffer->id);
-   glUnmapBuffer(GL_ARRAY_BUFFER);
+   // glUnmapBuffer(GL_ARRAY_BUFFER);
 
    /* The VAO needs to be bound here or the glDrawElements calls
     * will error out on some systems */

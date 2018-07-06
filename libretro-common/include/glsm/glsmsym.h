@@ -130,7 +130,7 @@ RETRO_BEGIN_DECLS
 #define glBlendEquationSeparate     rglBlendEquationSeparate
 #define glCopyImageSubData          rglCopyImageSubData
 #define glMapBuffer                 rglMapBuffer
-#define glUnmapBuffer               rglUnmapBuffer
+// #define glUnmapBuffer               rglUnmapBuffer
 #define glMapBufferRange            rglMapBufferRange
 #define glUniformBlockBinding       rglUniformBlockBinding
 #define glGetUniformBlockIndex      rglGetUniformBlockIndex
@@ -229,7 +229,7 @@ void *rglMapBufferRange( 	GLenum target,
   	GLintptr offset,
   	GLsizeiptr length,
   	GLbitfield access);
-GLboolean rglUnmapBuffer( 	GLenum target);
+// GLboolean rglUnmapBuffer( 	GLenum target);
 void rglBlendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
 void rglBlendEquation(GLenum mode);
 void rglGenVertexArrays(GLsizei n, GLuint *arrays);
