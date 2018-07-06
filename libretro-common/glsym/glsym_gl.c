@@ -26,7 +26,7 @@
 
 #define SYM(x) { "gl" #x, &(gl##x) }
 
-const struct rglgen_sym_map rglgen_symbol_map[] = {
+/* const struct rglgen_sym_map rglgen_symbol_map[] = {
     SYM(DrawRangeElements),
     SYM(TexImage3D),
     SYM(TexSubImage3D),
@@ -1054,7 +1054,7 @@ const struct rglgen_sym_map rglgen_symbol_map[] = {
     SYM(GetImageTransformParameterfvHP),
 
     { NULL, NULL },
-};
+}; */
 RGLSYMGLDRAWRANGEELEMENTSPROC __rglgen_glDrawRangeElements;
 RGLSYMGLTEXIMAGE3DPROC __rglgen_glTexImage3D;
 RGLSYMGLTEXSUBIMAGE3DPROC __rglgen_glTexSubImage3D;

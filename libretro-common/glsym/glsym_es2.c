@@ -1,7 +1,7 @@
 #include "glsym/glsym.h"
 #include <stddef.h>
 #define SYM(x) { "gl" #x, &(gl##x) }
-const struct rglgen_sym_map rglgen_symbol_map[] = {
+/* const struct rglgen_sym_map rglgen_symbol_map[] = {
     SYM(BlendBarrierKHR),
     SYM(DebugMessageControlKHR),
     SYM(DebugMessageInsertKHR),
@@ -205,7 +205,7 @@ const struct rglgen_sym_map rglgen_symbol_map[] = {
     SYM(FramebufferTextureMultisampleMultiviewOVR),
 
     { NULL, NULL },
-};
+}; */
 RGLSYMGLBLENDBARRIERKHRPROC __rglgen_glBlendBarrierKHR;
 RGLSYMGLDEBUGMESSAGECONTROLKHRPROC __rglgen_glDebugMessageControlKHR;
 RGLSYMGLDEBUGMESSAGEINSERTKHRPROC __rglgen_glDebugMessageInsertKHR;
