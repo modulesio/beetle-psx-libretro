@@ -4,6 +4,7 @@ HAVE_OPENGL = 0
 HAVE_VULKAN = 0
 HAVE_JIT = 0
 HAVE_CHD = 1
+HAVE_HW = 1
 
 CORE_DIR := .
 HAVE_GRIFFIN = 0
@@ -54,7 +55,7 @@ CORE_DEFINE := -DWANT_PSX_EMU
 TARGET_NAME := mednafen_psx
 
 ifeq ($(HAVE_HW), 1)
-   HAVE_VULKAN = 1
+   HAVE_VULKAN = 0
    HAVE_OPENGL = 1
    SET_HAVE_HW = 1
 endif
@@ -83,14 +84,7 @@ ifneq (,$(findstring unix,$(platform)))
    endif
    LDFLAGS += $(PTHREAD_FLAGS)
    FLAGS   +=
-   ifeq ($(HAVE_OPENGL),1)
-      ifneq (,$(findstring gles,$(platform)))
-         GLES = 1
-         GL_LIB := -lGLESv2
-      else
-         GL_LIB := -L/usr/local/lib -lGL
-      endif
-   endif
+	 GLES = 1
 
 # OS X
 else ifeq ($(platform), osx)
@@ -267,14 +261,7 @@ else ifeq ($(platform), emscripten)
 
    STATIC_LINKING = 1
 
-   ifeq ($(HAVE_OPENGL),1)
-      ifneq (,$(findstring gles,$(platform)))
-         GLES = 1
-         GL_LIB := -lGLESv2
-      else
-         GL_LIB := -lGL
-      endif
-   endif
+	 GLES = 1
 
 # Windows MSVC 2017 all architectures
 else ifneq (,$(findstring windows_msvc2017,$(platform)))
