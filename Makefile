@@ -264,20 +264,6 @@ else ifeq ($(platform), emscripten)
    SHARED  := -shared -Wl,--no-undefined -Wl,--version-script=link.T
    LDFLAGS += $(PTHREAD_FLAGS)
    FLAGS   += $(PTHREAD_FLAGS)
-               -Drglgen_symbol_map=mupen_rglgen_symbol_map \
-               -Dmain_exit=mupen_main_exit \
-               -Dadler32=mupen_adler32 \
-               -Drglgen_resolve_symbols_custom=mupen_rglgen_resolve_symbols_custom \
-               -Drglgen_resolve_symbols=mupen_rglgen_resolve_symbols \
-               -Dsinc_resampler=mupen_sinc_resampler \
-               -Dnearest_resampler=mupen_nearest_resampler \
-               -DCC_resampler=mupen_CC_resampler \
-               -Daudio_resampler_driver_find_handle=mupen_audio_resampler_driver_find_handle \
-               -Daudio_resampler_driver_find_ident=mupen_audio_resampler_driver_find_ident \
-               -Drarch_resampler_realloc=mupen_rarch_resampler_realloc \
-               -Daudio_convert_s16_to_float_C=mupen_audio_convert_s16_to_float_C \
-               -Daudio_convert_float_to_s16_C=mupen_audio_convert_float_to_s16_C \
-               -Daudio_convert_init_simd=mupen_audio_convert_init_simd \
 
    STATIC_LINKING = 1
 
