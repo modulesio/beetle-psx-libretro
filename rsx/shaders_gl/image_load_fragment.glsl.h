@@ -2,7 +2,7 @@
 
 static const char *image_load_fragment = GLSL(
       uniform sampler2D fb_texture;
-      uniform uint internal_upscaling;
+      uniform int internal_upscaling;
       in vec2 frag_fb_coord;
       out vec4 frag_color;
 

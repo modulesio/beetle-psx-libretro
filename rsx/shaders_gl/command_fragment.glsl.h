@@ -20,45 +20,45 @@ static const char * command_fragment_name_ = GLSL(
 uniform sampler2D fb_texture;
 
 // Scaling to apply to the dither pattern
-uniform uint dither_scaling;
+uniform int dither_scaling;
 
 // 0: Only draw opaque pixels, 1: only draw semi-transparent pixels
-uniform uint draw_semi_transparent;
+uniform int draw_semi_transparent;
 
-//uniform uint mask_setor;
-//uniform uint mask_evaland;
+//uniform int mask_setor;
+//uniform int mask_evaland;
 
 in vec3 frag_shading_color;
 // Texture page: base offset for texture lookup.
-flat in uvec2 frag_texture_page;
+flat in vec2 frag_texture_page;
 // Texel coordinates within the page. Interpolated by OpenGL.
 in vec2 frag_texture_coord;
 // Clut coordinates in VRAM
-flat in uvec2 frag_clut;
+flat in vec2 frag_clut;
 // 0: no texture, 1: raw-texture, 2: blended
-flat in uint frag_texture_blend_mode;
+flat in int frag_texture_blend_mode;
 // 0: 16bpp (no clut), 1: 8bpp, 2: 4bpp
-flat in uint frag_depth_shift;
+flat in int frag_depth_shift;
 // 0: No dithering, 1: dithering enabled
-flat in uint frag_dither;
+flat in int frag_dither;
 // 0: Opaque primitive, 1: semi-transparent primitive
-flat in uint frag_semi_transparent;
+flat in int frag_semi_transparent;
 // Texture window: [ X mask, X or, Y mask, Y or ]
-flat in uvec4 frag_texture_window;
+flat in vec4 frag_texture_window;
 // Texture limits: [Umin, Vmin, Umax, Vmax]
-flat in uvec4 frag_texture_limits;
+flat in vec4 frag_texture_limits;
 
 out vec4 frag_color;
 
-const uint BLEND_MODE_NO_TEXTURE    = 0U;
-const uint BLEND_MODE_RAW_TEXTURE   = 1U;
-const uint BLEND_MODE_TEXTURE_BLEND = 2U;
+const int BLEND_MODE_NO_TEXTURE    = 0U;
+const int BLEND_MODE_RAW_TEXTURE   = 1U;
+const int BLEND_MODE_TEXTURE_BLEND = 2U;
 
-const uint FILTER_MODE_NEAREST      = 0U;
-const uint FILTER_MODE_SABR         = 1U;
+const int FILTER_MODE_NEAREST      = 0U;
+const int FILTER_MODE_SABR         = 1U;
 
 // Read a pixel in VRAM
-vec4 vram_get_pixel(uint x, uint y) {
+vec4 vram_get_pixel(int x, int y) {
   x = (x & 0x3ffU);
   y = (y & 0x1ffU);
 
@@ -67,11 +67,11 @@ vec4 vram_get_pixel(uint x, uint y) {
 
 // Take a normalized color and convert it into a 16bit 1555 ABGR
 // integer in the format used internally by the Playstation GPU.
-uint rebuild_psx_color(vec4 color) {
-  uint a = uint(floor(color.a + 0.5));
-  uint r = uint(floor(color.r * 31. + 0.5));
-  uint g = uint(floor(color.g * 31. + 0.5));
-  uint b = uint(floor(color.b * 31. + 0.5));
+int rebuild_psx_color(vec4 color) {
+  int a = int(floor(color.a + 0.5));
+  int r = int(floor(color.r * 31. + 0.5));
+  int g = int(floor(color.g * 31. + 0.5));
+  int b = int(floor(color.b * 31. + 0.5));
 
   return (a << 15) | (b << 10) | (g << 5) | r;
 }
@@ -96,11 +96,11 @@ const int dither_pattern[16] =
 
 vec4 sample_texel(vec2 coords) {
    // Number of texel per VRAM 16bit "pixel" for the current depth
-   uint pix_per_hw = 1U << frag_depth_shift;
+   int pix_per_hw = 1U << frag_depth_shift;
 
    // Texture pages are limited to 256x256 pixels
-   uint tex_x = clamp(uint(coords.x), 0x0U, 0xffU);
-   uint tex_y = clamp(uint(coords.y), 0x0U, 0xffU);
+   int tex_x = clamp(int(coords.x), 0x0U, 0xffU);
+   int tex_y = clamp(int(coords.y), 0x0U, 0xffU);
 
    // Clamp to primitive limits
    tex_x = clamp(tex_x, frag_texture_limits[0], frag_texture_limits[2] - 1u);
@@ -111,7 +111,7 @@ vec4 sample_texel(vec2 coords) {
    tex_y = (tex_y & frag_texture_window[2]) | frag_texture_window[3];
 
    // Adjust x coordinate based on the texel color depth.
-   uint tex_x_pix = tex_x / pix_per_hw;
+   int tex_x_pix = tex_x / pix_per_hw;
 
    tex_x_pix += frag_texture_page.x;
    tex_y += frag_texture_page.y;
@@ -126,7 +126,7 @@ vec4 sample_texel(vec2 coords) {
       // "pixel"
       float tex_x_float = coords.x / float(pix_per_hw);
 
-      uint icolor = rebuild_psx_color(texel);
+      int icolor = rebuild_psx_color(texel);
 
       // A little bitwise magic to get the index in the CLUT. 4bpp
       // textures have 4 texels per VRAM "pixel", 8bpp have 2. We need
@@ -134,22 +134,22 @@ vec4 sample_texel(vec2 coords) {
       // halfword and then mask away the rest.
 
       // Bits per pixel (4 or 8)
-      uint bpp = 16U >> frag_depth_shift;
+      int bpp = 16U >> frag_depth_shift;
 
       // 0xf for 4bpp, 0xff for 8bpp
-      uint mask = ((1U << bpp) - 1U);
+      int mask = ((1U << bpp) - 1U);
 
       // 0...3 for 4bpp, 0...1 for 8bpp
-      uint align = tex_x & ((1U << frag_depth_shift) - 1U);
+      int align = tex_x & ((1U << frag_depth_shift) - 1U);
 
       // 0, 4, 8 or 12 for 4bpp, 0 or 8 for 8bpp
-      uint shift = (align * bpp);
+      int shift = (align * bpp);
 
       // Finally we have the index in the CLUT
-      uint index = (icolor >> shift) & mask;
+      int index = (icolor >> shift) & mask;
 
-      uint clut_x = frag_clut.x + index;
-      uint clut_y = frag_clut.y;
+      int clut_x = frag_clut.x + index;
+      int clut_y = frag_clut.y;
 
       // Look up the real color for the texel in the CLUT
       texel = vram_get_pixel(clut_x, clut_y);
@@ -692,9 +692,9 @@ STRINGIZE(
          // Bit 15 (stored in the alpha) is used as a flag for
          // semi-transparency, but only if this is a semi-transparent draw
          // command
-         uint transparency_flag = uint(floor(texel0.a + 0.5));
+         int transparency_flag = int(floor(texel0.a + 0.5));
 
-         uint is_texel_semi_transparent = transparency_flag & frag_semi_transparent;
+         int is_texel_semi_transparent = transparency_flag & frag_semi_transparent;
 
          if (is_texel_semi_transparent != draw_semi_transparent) {
             // We're not drawing those texels in this pass, discard
@@ -716,8 +716,8 @@ STRINGIZE(
       }
 
    // 4x4 dithering pattern scaled by `dither_scaling`
-   uint x_dither = (uint(gl_FragCoord.x) / dither_scaling) & 3U;
-   uint y_dither = (uint(gl_FragCoord.y) / dither_scaling) & 3U;
+   int x_dither = (int(gl_FragCoord.x) / dither_scaling) & 3U;
+   int y_dither = (int(gl_FragCoord.y) / dither_scaling) & 3U;
 
    // The multiplication by `frag_dither` will result in
    // `dither_offset` being 0 if dithering is disabled

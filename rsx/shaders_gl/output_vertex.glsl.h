@@ -3,7 +3,7 @@
 static const char *output_vertex = GLSL(
    // Vertex shader for rendering GPU draw commands in the framebuffer
    in vec2 position;
-   in uvec2 fb_coord;
+   in vec2 fb_coord;
 
    out vec2 frag_fb_coord;
 

@@ -7,9 +7,9 @@ static const char *output_fragment = GLSL(
    uniform int depth_24bpp;
    // Internal resolution upscaling factor. Necessary for proper 24bpp
    // display since we need to know how the pixels are laid out in RAM.
-   uniform uint internal_upscaling;
+   uniform int internal_upscaling;
    // Coordinates of the top-left displayed pixel in VRAM (1x resolution)
-   uniform uvec2 offset;
+   uniform vec2 offset;
    // Normalized relative offset in the displayed area in VRAM. Absolute
    // coordinates must take `offset` into account.
    in vec2 frag_fb_coord;
@@ -18,11 +18,11 @@ static const char *output_fragment = GLSL(
 
    // Take a normalized color and convert it into a 16bit 1555 ABGR
    // integer in the format used internally by the Playstation GPU.
-   uint rebuild_color(vec4 color) {
-      uint a = uint(floor(color.a + 0.5));
-      uint r = uint(floor(color.r * 31. + 0.5));
-      uint g = uint(floor(color.g * 31. + 0.5));
-      uint b = uint(floor(color.b * 31. + 0.5));
+   int rebuild_color(vec4 color) {
+      int a = int(floor(color.a + 0.5));
+      int r = int(floor(color.r * 31. + 0.5));
+      int g = int(floor(color.g * 31. + 0.5));
+      int b = int(floor(color.b * 31. + 0.5));
 
       return (a << 15) | (b << 10) | (g << 5) | r;
    }
@@ -41,28 +41,28 @@ static const char *output_fragment = GLSL(
          // 24bit RGB values instead of the usual 16bits 1555.
          ivec2 fb_size = textureSize(fb, 0);
 
-         uint x_24 = uint(frag_fb_coord.x * float(fb_size.x));
-         uint y = uint(frag_fb_coord.y * float(fb_size.y));
+         int x_24 = int(frag_fb_coord.x * float(fb_size.x));
+         int y = int(frag_fb_coord.y * float(fb_size.y));
 
-         uint x_native = x_24 / internal_upscaling;
+         int x_native = x_24 / internal_upscaling;
 
          x_24 = x_native * internal_upscaling;
 
          // The 24bit color is stored over two 16bit pixels, convert the
          // coordinates
-         uint x0_16 = (x_24 * 3U) / 2U;
+         int x0_16 = (x_24 * 3U) / 2U;
 
 	 // Add the offsets
 	 x0_16 += offset.x * internal_upscaling;
 	 y     += offset.y * internal_upscaling;
 
          // Move on to the next pixel at native resolution
-         uint x1_16 = x0_16 + internal_upscaling;
+         int x1_16 = x0_16 + internal_upscaling;
 
-         uint col0 = rebuild_color(texelFetch(fb, ivec2(x0_16, y), 0));
-         uint col1 = rebuild_color(texelFetch(fb, ivec2(x1_16, y), 0));
+         int col0 = rebuild_color(texelFetch(fb, ivec2(x0_16, y), 0));
+         int col1 = rebuild_color(texelFetch(fb, ivec2(x1_16, y), 0));
 
-         uint col = (col1 << 16) | col0;
+         int col = (col1 << 16) | col0;
 
          // If we're drawing an odd 24 bit pixel we're starting in the
          // middle of a 16bit cell so we need to adjust accordingly.

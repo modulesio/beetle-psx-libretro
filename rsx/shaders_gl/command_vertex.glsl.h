@@ -10,30 +10,30 @@
 static const char * command_vertex_name_ = GLSL(
 // Vertex shader for rendering GPU draw commands in the framebuffer
 in vec4 position;
-in uvec3 color;
-in uvec2 texture_page;
-in uvec2 texture_coord;
-in uvec2 clut;
-in uint texture_blend_mode;
-in uint depth_shift;
-in uint dither;
-in uint semi_transparent;
-in uvec4 texture_window;
-in uvec4 texture_limits;
+in vec3 color;
+in vec2 texture_page;
+in vec2 texture_coord;
+in vec2 clut;
+in int texture_blend_mode;
+in int depth_shift;
+in int dither;
+in int semi_transparent;
+in vec4 texture_window;
+in vec4 texture_limits;
 
 // Drawing offset
 uniform ivec2 offset;
 
 out vec3 frag_shading_color;
-flat out uvec2 frag_texture_page;
+flat out vec2 frag_texture_page;
 out vec2 frag_texture_coord;
-flat out uvec2 frag_clut;
-flat out uint frag_texture_blend_mode;
-flat out uint frag_depth_shift;
-flat out uint frag_dither;
-flat out uint frag_semi_transparent;
-flat out uvec4 frag_texture_window;
-flat out uvec4 frag_texture_limits;
+flat out vec2 frag_clut;
+flat out int frag_texture_blend_mode;
+flat out int frag_depth_shift;
+flat out int frag_dither;
+flat out int frag_semi_transparent;
+flat out vec4 frag_texture_window;
+flat out vec4 frag_texture_limits;
 )
 
 #if defined(FILTER_SABR) || defined(FILTER_XBR)
