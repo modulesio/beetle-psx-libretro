@@ -601,7 +601,7 @@ static void DrawBuffer_enable_attribute(DrawBuffer<T> *drawbuffer, const char* a
    if (index < 0)
       return;
 
-   glBindVertexArray(drawbuffer->vao);
+   // glBindVertexArray(drawbuffer->vao);
    glEnableVertexAttribArray(index);
 }
 
@@ -613,7 +613,7 @@ static void DrawBuffer_disable_attribute(DrawBuffer<T> *drawbuffer, const char* 
    if (index < 0)
       return;
 
-   glBindVertexArray(drawbuffer->vao);
+   // glBindVertexArray(drawbuffer->vao);
    glDisableVertexAttribArray(index);
 }
 
@@ -646,7 +646,7 @@ static void DrawBuffer_draw(DrawBuffer<T> *drawbuffer, GLenum mode)
 
    /* The VAO needs to be bound now or else glDrawArrays
     * errors out on some systems */
-   glBindVertexArray(drawbuffer->vao);
+   // glBindVertexArray(drawbuffer->vao);
    glUseProgram(drawbuffer->program->id);
 
    /* Length in number of vertices */
@@ -702,7 +702,7 @@ static void DrawBuffer_free(DrawBuffer<T> *drawbuffer)
 
    Program_free(drawbuffer->program);
    glDeleteBuffers(1, &drawbuffer->id);
-   glDeleteVertexArrays(1, &drawbuffer->vao);
+   // glDeleteVertexArrays(1, &drawbuffer->vao);
 
    delete drawbuffer->program;
 
@@ -721,7 +721,7 @@ static void DrawBuffer_bind_attributes(DrawBuffer<T> *drawbuffer)
    unsigned i;
    GLint nVertexAttribs;
 
-   glBindVertexArray(drawbuffer->vao);
+   // glBindVertexArray(drawbuffer->vao);
 
    /* ARRAY_BUFFER is captured by VertexAttribPointer */
    glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
@@ -806,10 +806,10 @@ static void DrawBuffer_new(DrawBuffer<T> *drawbuffer,
    Shader_free(&fs);
    Shader_free(&vs);
 
-   glGenVertexArrays(1, &id);
+   // glGenVertexArrays(1, &id);
 
    drawbuffer->map       = NULL;
-   drawbuffer->vao       = id;
+   // drawbuffer->vao       = id;
 
    id                    = 0;
 
@@ -988,7 +988,7 @@ static void GlRenderer_draw(GlRenderer *renderer)
 
    /* The VAO needs to be bound here or the glDrawElements calls
     * will error out on some systems */
-   glBindVertexArray(renderer->command_buffer->vao);
+   // glBindVertexArray(renderer->command_buffer->vao);
 
    renderer->command_buffer->map = NULL;
 
@@ -1936,7 +1936,7 @@ static void cleanup_gl_state(void)
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, 0);
    glUseProgram(0);
-   glBindVertexArray(0);
+   // glBindVertexArray(0);
    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
    glLineWidth(1.0);
    glClearColor(0.0, 0.0, 0.0, 0.0);
