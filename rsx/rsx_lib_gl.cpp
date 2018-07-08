@@ -1004,8 +1004,9 @@ static void GlRenderer_draw(GlRenderer *renderer)
    /* Bind the out framebuffer */
    Framebuffer_init(&_fb, &renderer->fb_out);
 
-   glFramebufferTexture(   GL_DRAW_FRAMEBUFFER,
+   glFramebufferTexture2D(   GL_FRAMEBUFFER,
          GL_DEPTH_ATTACHMENT,
+         GL_TEXTURE_2D,
          renderer->fb_out_depth.id,
          0);
 
@@ -1590,7 +1591,10 @@ static void bind_libretro_framebuffer(GlRenderer *renderer)
 
    /* Bind the output framebuffer provided by the frontend */
    fbo = glsm_get_current_framebuffer();
-   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+   fbo = 0;
+
+   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
    glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 }
 
@@ -1993,7 +1997,7 @@ static void cleanup_gl_state(void)
    glBindTexture(GL_TEXTURE_2D, 0);
    glUseProgram(0);
    // glBindVertexArray(0);
-   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);
    glLineWidth(1.0);
    glClearColor(0.0, 0.0, 0.0, 0.0);
 }
@@ -2805,9 +2809,10 @@ void rsx_gl_copy_rect(  uint16_t src_x, uint16_t src_y,
    GLuint fb;
 
    glGenFramebuffers(1, &fb);
-   glBindFramebuffer(GL_READ_FRAMEBUFFER, fb);
-   glFramebufferTexture(GL_READ_FRAMEBUFFER,
+   glBindFramebuffer(GL_FRAMEBUFFER, fb);
+   glFramebufferTexture2D(GL_FRAMEBUFFER,
          GL_COLOR_ATTACHMENT0,
+         GL_TEXTURE_2D,
          renderer->fb_out.id,
          0);
 
