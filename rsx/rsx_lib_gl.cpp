@@ -662,10 +662,10 @@ static void DrawBuffer_draw(DrawBuffer<T> *drawbuffer, GLenum mode)
    template<typename T>
 static void DrawBuffer_map__no_bind(DrawBuffer<T> *drawbuffer)
 {
-   GLintptr offset_bytes;
-   void *m                = NULL;
-   size_t element_size    = sizeof(T);
-   GLsizeiptr buffer_size = drawbuffer->capacity * element_size;
+   // GLintptr offset_bytes;
+   // void *m                = NULL;
+   // size_t element_size    = sizeof(T);
+   // GLsizeiptr buffer_size = drawbuffer->capacity * element_size;
 
    glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
 
@@ -677,7 +677,7 @@ static void DrawBuffer_map__no_bind(DrawBuffer<T> *drawbuffer)
    if (drawbuffer->map_start > 2 * drawbuffer->capacity)
       drawbuffer->map_start = 0;
 
-   offset_bytes = drawbuffer->map_start * element_size;
+   // offset_bytes = drawbuffer->map_start * element_size;
 
    /* m = glMapBufferRange(GL_ARRAY_BUFFER,
          offset_bytes,
