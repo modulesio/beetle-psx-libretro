@@ -844,8 +844,14 @@ static void DrawBuffer_new(DrawBuffer<T> *drawbuffer,
 static void Framebuffer_init(struct Framebuffer *fb,
       struct Texture* color_texture)
 {
+   // GLenum error = glGetError();
+   // if (error) printf("framebuffer error 0 %d\n", error);
+
    GLuint id = 0;
    glGenFramebuffers(1, &id);
+
+   // error = glGetError();
+   // if (error) printf("framebuffer error 1 %d\n", error);
 
    fb->id                    = id;
 
@@ -853,37 +859,67 @@ static void Framebuffer_init(struct Framebuffer *fb,
    fb->_color_texture.width  = color_texture->width;
    fb->_color_texture.height = color_texture->height;
 
-   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->id);
+   glBindFramebuffer(GL_FRAMEBUFFER, fb->id);
 
-   glFramebufferTexture(   GL_DRAW_FRAMEBUFFER,
+   // error = glGetError();
+   // if (error) printf("framebuffer error 2 %d\n", error);
+
+   glFramebufferTexture2D(   GL_FRAMEBUFFER,
                            GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D,
                            color_texture->id,
                            0);
+
+   // error = glGetError();
+   // if (error) printf("framebuffer error 3 %d\n", error);
 
    GLenum col_attach_0 = GL_COLOR_ATTACHMENT0;
 
    glDrawBuffers(1, &col_attach_0);
+
+   // error = glGetError();
+   // if (error) printf("framebuffer error 4 %d\n", error);
+
    glViewport( 0,
                0,
                (GLsizei) color_texture->width,
                (GLsizei) color_texture->height);
+
+   // error = glGetError();
+   // if (error) printf("framebuffer error 5 %d\n", error);
 }
 
 static void Texture_init(
       struct Texture *tex,
       uint32_t width,
       uint32_t height,
-      GLenum internal_format)
-{
+      GLenum internal_format,
+      GLenum format,
+      GLenum type
+) {
    GLuint id = 0;
 
    glGenTextures(1, &id);
+
    glBindTexture(GL_TEXTURE_2D, id);
-   glTexStorage2D(GL_TEXTURE_2D,
+
+   glTexImage2D(
+     GL_TEXTURE_2D,
+     0,
+     internal_format,
+     (GLsizei) width,
+     (GLsizei) height,
+     0,
+     format,
+     type,
+     0
+   );
+
+   /* glTexStorage2D(GL_TEXTURE_2D,
                   1,
                   internal_format,
                   (GLsizei) width,
-                  (GLsizei) height);
+                  (GLsizei) height); */
 
    tex->id     = id;
    tex->width  = width;
