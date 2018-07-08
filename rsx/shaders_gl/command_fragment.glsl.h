@@ -647,7 +647,7 @@ vec4 get_texel_jinc2()\n\
 void main() {\n\
    vec4 color;\n\
    frag_color = vec4(1.0, 0.0, 0.0, 1.0);\n\
-   return;
+   return;\n\
 \n\
       if (frag_texture_blend_mode == BLEND_MODE_NO_TEXTURE)\n\
       {\n\
