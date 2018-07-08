@@ -1375,7 +1375,7 @@ static bool GlRenderer_new(GlRenderer *renderer, DrawConfig config)
    /* Texture holding the raw VRAM texture contents. We can't
     * meaningfully upscale it since most games use paletted
     * textures. */
-   Texture_init(&renderer->fb_texture, native_width, native_height, GL_RGB5_A1);
+   Texture_init(&renderer->fb_texture, native_width, native_height, GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV);
 
    if (depth > 16 || dither_mode == DITHER_OFF)
    {
@@ -1395,12 +1395,18 @@ static bool GlRenderer_new(GlRenderer *renderer, DrawConfig config)
    }
 
    GLenum texture_storage = GL_RGB5_A1;
+   GLenum texture_format = GL_RGBA;
+   GLenum texture_type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
    switch (depth) {
       case 16:
          texture_storage = GL_RGB5_A1;
+         texture_format = GL_RGBA;
+         texture_type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
          break;
       case 32:
          texture_storage = GL_RGBA8;
+         texture_format = GL_RGBA;
+         texture_type = GL_UNSIGNED_BYTE;
          break;
       default:
          log_cb(RETRO_LOG_ERROR, "Unsupported depth %d\n", depth);
@@ -1411,13 +1417,19 @@ static bool GlRenderer_new(GlRenderer *renderer, DrawConfig config)
          &renderer->fb_out,
          native_width  * upscaling,
          native_height * upscaling,
-         texture_storage);
+         texture_storage,
+         texture_format,
+         texture_type
+   );
 
    Texture_init(
          &renderer->fb_out_depth,
          renderer->fb_out.width,
          renderer->fb_out.height,
-         GL_DEPTH_COMPONENT32F);
+         GL_DEPTH_COMPONENT32F,
+         GL_DEPTH_COMPONENT,
+         GL_FLOAT
+   );
 
    renderer->filter_type = filter;
    renderer->command_buffer = command_buffer;
@@ -1665,12 +1677,18 @@ static bool retro_refresh_variables(GlRenderer *renderer)
       uint32_t h = native_height * upscaling;
 
       GLenum texture_storage = GL_RGB5_A1;
+      GLenum texture_format = GL_RGBA;
+      GLenum texture_type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
       switch (depth) {
          case 16:
             texture_storage = GL_RGB5_A1;
+            texture_format = GL_RGBA;
+            texture_type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
             break;
          case 32:
             texture_storage = GL_RGBA8;
+            texture_format = GL_RGBA;
+            texture_type = GL_UNSIGNED_BYTE;
             break;
          default:
             log_cb(RETRO_LOG_ERROR, "Unsupported depth %d\n", depth);
@@ -1681,7 +1699,7 @@ static bool retro_refresh_variables(GlRenderer *renderer)
       renderer->fb_out.id     = 0;
       renderer->fb_out.width  = 0;
       renderer->fb_out.height = 0;
-      Texture_init(&renderer->fb_out, w, h, texture_storage);
+      Texture_init(&renderer->fb_out, w, h, texture_storage, texture_format, texture_type);
 
       /* This is a bit wasteful since it'll re-upload the data
        * to 'fb_texture' even though we haven't touched it but
@@ -1696,7 +1714,7 @@ static bool retro_refresh_variables(GlRenderer *renderer)
       renderer->fb_out_depth.id     = 0;
       renderer->fb_out_depth.width  = 0;
       renderer->fb_out_depth.height = 0;
-      Texture_init(&renderer->fb_out_depth, w, h, GL_DEPTH_COMPONENT32F);
+      Texture_init(&renderer->fb_out_depth, w, h, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
    }
 
    if (renderer->command_buffer->program)
