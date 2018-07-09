@@ -235,6 +235,8 @@ struct DrawBuffer
    /* Absolute offset of the 1st mapped element in the current
     * buffer relative to the beginning of the GL storage. */
    size_t map_start;
+
+   GLuint element_array_buffer;
 };
 
 struct GlRenderer {
@@ -709,6 +711,8 @@ static void DrawBuffer_free(DrawBuffer<T> *drawbuffer)
    drawbuffer->capacity  = 0;
    drawbuffer->map_index = 0;
    drawbuffer->map_start = 0;
+
+   glDeleteBuffers(1, &drawbuffer->element_array_buffer);
 }
 
    template<typename T>
@@ -835,6 +839,10 @@ static void DrawBuffer_new(DrawBuffer<T> *drawbuffer,
    drawbuffer->map_start = 0;
 
    DrawBuffer_map__no_bind(drawbuffer);
+
+   glGenBuffers(1, &drawbuffer->element_array_buffer);
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawbuffer->element_array_buffer);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * INDEX_BUFFER_LEN * sizeof(GLushort), nullptr, GL_DYNAMIC_DRAW);
 }
 
 static void Framebuffer_init(struct Framebuffer *fb,
@@ -1030,6 +1038,8 @@ static void GlRenderer_draw(GlRenderer *renderer)
    GLsizei opaque_triangle_len =
       INDEX_BUFFER_LEN - renderer->opaque_triangle_index_pos - 1;
 
+   GLsizei indexOffset = 0;
+
    printf("draw opaque triangle %d\n", opaque_triangle_len);
    if (opaque_triangle_len)
    {
@@ -1039,7 +1049,10 @@ static void GlRenderer_draw(GlRenderer *renderer)
           * must be handled by the caller. This is because this command
           * can be called several times on the same buffer (i.e. multiple
           * draw calls between the prepare/finalize) */
-         glDrawElements(GL_TRIANGLES, opaque_triangle_len, GL_UNSIGNED_SHORT, opaque_triangle_indices);
+         GLsizei indexSize = opaque_triangle_len * sizeof(GLushort);
+         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, opaque_triangle_indices);
+         glDrawElements(GL_TRIANGLES, opaque_triangle_len, GL_UNSIGNED_SHORT, 0);
+         indexOffset += indexSize;
       }
    }
 
@@ -1057,7 +1070,10 @@ static void GlRenderer_draw(GlRenderer *renderer)
           * must be handled by the caller. This is because this command
           * can be called several times on the same buffer (i.e. multiple
           * draw calls between the prepare/finalize) */
-         glDrawElements(GL_LINES, opaque_line_len, GL_UNSIGNED_SHORT, opaque_line_indices);
+         GLsizei indexSize = opaque_line_len * sizeof(GLushort);
+         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, opaque_line_indices);
+         glDrawElements(GL_LINES, opaque_line_len, GL_UNSIGNED_SHORT, 0);
+         indexOffset += indexSize;
       }
    }
 
@@ -1132,7 +1148,10 @@ static void GlRenderer_draw(GlRenderer *renderer)
              * must be handled by the caller. This is because this command
              * can be called several times on the same buffer (i.e. multiple
              * draw calls between the prepare/finalize) */
-            glDrawElements(it->draw_mode, len, GL_UNSIGNED_SHORT, indices);
+            GLsizei indexSize = len * sizeof(GLushort);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, indices);
+            glDrawElements(it->draw_mode, len, GL_UNSIGNED_SHORT, 0);
+            indexOffset += indexSize;
          }
 
          cur_index = it->last_index;
