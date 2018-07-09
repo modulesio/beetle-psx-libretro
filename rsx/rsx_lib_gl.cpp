@@ -897,13 +897,14 @@ static void Texture_init(
       GLenum format,
       GLenum type
 ) {
+   printf("Texture_init\n");
+
    GLuint id = 0;
 
    glGenTextures(1, &id);
 
    glBindTexture(GL_TEXTURE_2D, id);
-
-   glTexImage2D(
+   /* glTexImage2D(
      GL_TEXTURE_2D,
      0,
      internal_format,
@@ -913,13 +914,12 @@ static void Texture_init(
      format,
      type,
      0
-   );
-
-   /* glTexStorage2D(GL_TEXTURE_2D,
+   ); */
+   glTexStorage2D(GL_TEXTURE_2D,
                   1,
                   internal_format,
                   (GLsizei) width,
-                  (GLsizei) height); */
+                  (GLsizei) height);
 
    tex->id     = id;
    tex->width  = width;
