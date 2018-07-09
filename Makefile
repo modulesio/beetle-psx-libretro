@@ -256,7 +256,9 @@ else ifeq ($(platform), emscripten)
    TARGET  := $(TARGET_NAME)_libretro_$(platform).bc
    fpic    := -fPIC
    SHARED  := -shared -Wl,--no-undefined -Wl,--version-script=link.T
-   LDFLAGS += $(PTHREAD_FLAGS) -s USE_WEBGL2=1
+   LDFLAGS += $(PTHREAD_FLAGS) -s USE_WEBGL2=1 -s FULL_ES2=1 -s FULL_ES3=1
+   # CFLAGS += -DHAVE_OPENGLES=1 -DHAVE_OPENGLES2=1 -DHAVE_OPENGLES3=1 -DUSE_WEBGL2=1 -DFULL_ES2=1 -DFULL_ES3=1
+   # CXXFLAGS += -DHAVE_OPENGLES=1 -DHAVE_OPENGLES2=1 -DHAVE_OPENGLES3=1 -DUSE_WEBGL2=1 -DFULL_ES2=1 -DFULL_ES3=1
    FLAGS   += $(PTHREAD_FLAGS)
 
    STATIC_LINKING = 1
