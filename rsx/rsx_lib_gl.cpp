@@ -30,10 +30,6 @@
 #define DRAWBUFFER_REMAINING_CAPACITY(x) ((x)->capacity - (x)->map_index)
 #define DRAWBUFFER_NEXT_INDEX(x)         ((x)->map_start + (x)->map_index)
 
-#ifndef GL_MAP_INVALIDATE_RANGE_BIT
-#define GL_MAP_INVALIDATE_RANGE_BIT       0x000
-#endif
-
 #include "shaders_gl/command_vertex.glsl.h"
 #include "shaders_gl/command_fragment.glsl.h"
 #define FILTER_XBR
