@@ -29,6 +29,8 @@ static const char *output_fragment = GLSL_FRAGMENT "\n\
    }\n\
 \n\
    void main() {\n\
+      // frag_color = texture(fb, frag_fb_coord);\n\
+      // return;\n\
       vec3 color;\n\
 \n\
       if (depth_24bpp == 0) {\n\
@@ -77,6 +79,7 @@ static const char *output_fragment = GLSL_FRAGMENT "\n\
          color = vec3(r, g, b);\n\
       }\n\
 \n\
+      // frag_color = vec4(color + vec3(0.2, 0.2, 0.2), 1.0);\n\
       frag_color = vec4(color, 1.0);\n\
    }\n\
 ";

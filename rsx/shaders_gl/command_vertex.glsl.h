@@ -27,6 +27,7 @@ uniform ivec2 offset;\n\
 out vec3 frag_shading_color;\n\
 flat out ivec2 frag_texture_page;\n\
 out vec2 frag_texture_coord;\n\
+// out vec4 currentPosition;\n\
 flat out ivec2 frag_clut;\n\
 flat out int frag_texture_blend_mode;\n\
 flat out int frag_depth_shift;\n\
@@ -50,6 +51,7 @@ out vec4 xyp_9_14_9;\n\
 "\n\
 void main() {\n\
    vec2 pos = position.xy + vec2(offset);\n\
+   // vec2 pos = position.xy;\n\
 \n\
    // Convert VRAM coordinates (0;1023, 0;511) into OpenGL coordinates\n\
    // (-1;1, -1;1)\n\
@@ -62,6 +64,7 @@ void main() {\n\
    float zpos = 1.0 - (position.z / 32768.);\n\
 \n\
    gl_Position.xyzw = vec4(xpos * wpos, ypos * wpos, zpos * wpos, wpos);\n\
+   // currentPosition = gl_Position;\n\
    //gl_Position.xyzw = vec4(xpos, ypos, zpos, 1.);\n\
 \n\
    // Glium doesn't support 'normalized' for now\n\

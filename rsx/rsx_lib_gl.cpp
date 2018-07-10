@@ -237,6 +237,8 @@ struct DrawBuffer
    size_t map_start;
 
    GLuint element_array_buffer;
+
+   // char arrayBuffer[VERTEX_BUFFER_LEN * sizeof(T) * 3];
 };
 
 struct GlRenderer {
@@ -626,6 +628,8 @@ static void DrawBuffer_push_slice(DrawBuffer<T> *drawbuffer, T slice[], size_t n
 
    glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
    glBufferSubData(GL_ARRAY_BUFFER, (drawbuffer->map_start + drawbuffer->map_index) * sizeof(T), n * sizeof(T), slice);
+   // glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
+   // glBufferSubData(GL_ARRAY_BUFFER, (drawbuffer->map_start + drawbuffer->map_index) * sizeof(T), n * sizeof(T), slice);
    /* memcpy(  drawbuffer->map + drawbuffer->map_index,
             slice,
             n * sizeof(T)); */
@@ -648,6 +652,8 @@ static void DrawBuffer_draw(DrawBuffer<T> *drawbuffer, GLenum mode)
    glUseProgram(drawbuffer->program->id);
 
    /* Length in number of vertices */
+   // glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
+   // glBufferSubData(GL_ARRAY_BUFFER, drawbuffer->map_start * sizeof(T), drawbuffer->map_index * sizeof(T), drawbuffer->arrayBuffer);
    glDrawArrays(mode, drawbuffer->map_start, drawbuffer->map_index);
 
    drawbuffer->map_start += drawbuffer->map_index;
@@ -934,6 +940,9 @@ static void Texture_set_sub_image(
       GLenum ty,
       uint16_t* data)
 {
+   GLenum error = glGetError();
+   printf("got error %d\n", error);
+
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
    glBindTexture(GL_TEXTURE_2D, tex->id);
    glTexSubImage2D(  GL_TEXTURE_2D,
@@ -1472,6 +1481,7 @@ static bool GlRenderer_new(GlRenderer *renderer, DrawConfig config)
    renderer->tex_y_mask = 0;
    renderer->tex_y_or = 0;
    renderer->display_vram = display_vram;
+   // renderer->display_vram = true;
    renderer->mask_set_or  = 0;
    renderer->mask_eval_and = 0;
 
@@ -1555,7 +1565,8 @@ static inline void apply_scissor(GlRenderer *renderer)
    GLsizei w = (GLsizei) _w * upscale;
    GLsizei h = (GLsizei) _h * upscale;
 
-   glScissor(x, y, w, h);
+   // glScissor(x, y, w, h);
+   glScissor(0, 0, 1280, 1024);
 }
 
 static void bind_libretro_framebuffer(GlRenderer *renderer)
@@ -1614,7 +1625,8 @@ static void bind_libretro_framebuffer(GlRenderer *renderer)
 
    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 
-   glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+   // glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+   glViewport(0, 0, 1280, 1024);
 }
 
 static bool retro_refresh_variables(GlRenderer *renderer)
@@ -1856,6 +1868,21 @@ static void push_primitive(
 
    for (unsigned i = 0; i < count; i++)
    {
+      // CommandVertex *v2 = &v[i];
+      // printf("push primitive %f %f %f %f, %f %f %f, %f %f, %d, %d %d\n", v2->position[0], v2->position[1], v2->position[2], v2->position[3], v2->color[0], v2->color[1], v2->color[2], v2->texture_coord[0], v2->texture_coord[1], v2->depth_shift, i, index);
+      /* if (i == 0) {
+        v2->position[0] = -0.5;
+        v2->position[1] = -0.5;
+      } else if (i == 1) {
+        v2->position[0] = 0.5;
+        v2->position[1] = -0.5;
+      } else if (i == 2) {
+        v2->position[0] = -0.5;
+        v2->position[1] = 0.5;
+      } else if (i == 3) {
+        v2->position[0] = 0.5;
+        v2->position[1] = 0.5;
+      } */
       if (is_opaque)
       {
          if (mode == GL_TRIANGLES)
@@ -2219,6 +2246,7 @@ bool rsx_gl_has_software_renderer(void)
 
 void rsx_gl_prepare_frame(void)
 {
+   // printf("prepare frame 1\n");
    if (static_renderer.state == GlState_Invalid)
       return;
 
@@ -2244,11 +2272,14 @@ void rsx_gl_prepare_frame(void)
 
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, renderer->fb_texture.id);
+
+   // printf("prepare frame 2\n");
 }
 
 void rsx_gl_finalize_frame(const void *fb, unsigned width,
                            unsigned height, unsigned pitch)
 {
+   printf("finalize frame 1\n");
    /* Setup 2 triangles that cover the entire framebuffer
       then copy the displayed portion of the screen from fb_out */
 
@@ -2258,6 +2289,8 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
    GlRenderer *renderer = static_renderer.state_data;
    if (!renderer)
       return;
+
+   printf("finalize frame 2\n");
 
    /* Draw pending commands */
    if (!DRAWBUFFER_IS_EMPTY(renderer->command_buffer))
@@ -2271,6 +2304,8 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
    glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_BLEND);
+
+   printf("finalize frame 3 %d %d\n", renderer->config.display_off, !renderer->display_vram);
 
    /* If the display is off, just clear the screen */
    if (renderer->config.display_off && !renderer->display_vram)
@@ -2331,6 +2366,8 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
       }
    }
 
+   printf("finalize frame 4\n");
+
    /* TODO - Hack: copy fb_out back into fb_texture at the end of every
     * frame to make offscreen rendering kinda sorta work. Very messy
     * and slow. */
@@ -2372,6 +2409,13 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
    }
 
    cleanup_gl_state();
+
+   /* glClearColor(1.0, 0.0, 0.0, 1.0);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+   cleanup_gl_state(); */
+
+   printf("finalize frame 5\n");
 
    /* When using a hardware renderer we set the data pointer to
     * -1 to notify the frontend that the frame has been rendered

@@ -47,6 +47,7 @@ flat in int frag_semi_transparent;\n\
 flat in ivec4 frag_texture_window;\n\
 // Texture limits: [Umin, Vmin, Umax, Vmax]\n\
 flat in ivec4 frag_texture_limits;\n\
+// in vec4 currentPosition;\n\
 \n\
 out vec4 frag_color;\n\
 \n\
@@ -646,8 +647,8 @@ vec4 get_texel_jinc2()\n\
 "\n\
 void main() {\n\
    vec4 color;\n\
-   frag_color = vec4(1.0, 0.0, 0.0, 1.0);\n\
-   return;\n\
+   // frag_color = vec4(currentPosition.z + 0.5, 0.5, 0.5, 1.0);\n\
+   // return;\n\
 \n\
       if (frag_texture_blend_mode == BLEND_MODE_NO_TEXTURE)\n\
       {\n\
