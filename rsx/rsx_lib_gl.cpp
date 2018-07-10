@@ -636,7 +636,7 @@ static void DrawBuffer_push_slice(DrawBuffer<T> *drawbuffer, T slice[], size_t n
    template<typename T>
 static void DrawBuffer_draw(DrawBuffer<T> *drawbuffer, GLenum mode)
 {
-   glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
+   // glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
    /* Unmap the active buffer */
    // glUnmapBuffer(GL_ARRAY_BUFFER);
 
@@ -665,7 +665,7 @@ static void DrawBuffer_map__no_bind(DrawBuffer<T> *drawbuffer)
    // size_t element_size    = sizeof(T);
    // GLsizeiptr buffer_size = drawbuffer->capacity * element_size;
 
-   glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
+   // glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
 
    /* If we're already mapped something's wrong */
    // assert(drawbuffer->map == NULL);
@@ -695,7 +695,7 @@ static void DrawBuffer_free(DrawBuffer<T> *drawbuffer)
       return;
 
    /* Unmap the active buffer */
-   glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
+   // glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
    // glUnmapBuffer(GL_ARRAY_BUFFER);
 
    Program_free(drawbuffer->program);
@@ -1022,7 +1022,7 @@ static void GlRenderer_draw(GlRenderer *renderer)
       glUniform1ui(renderer->command_buffer->program->uniforms["draw_semi_transparent"], 0);
 
    /* Bind and unmap the command buffer */
-   glBindBuffer(GL_ARRAY_BUFFER, renderer->command_buffer->id);
+   // glBindBuffer(GL_ARRAY_BUFFER, renderer->command_buffer->id);
    // glUnmapBuffer(GL_ARRAY_BUFFER);
 
    /* The VAO needs to be bound here or the glDrawElements calls
