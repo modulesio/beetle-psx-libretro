@@ -754,6 +754,7 @@ static void DrawBuffer_bind_attributes(DrawBuffer<T> *drawbuffer)
 
       /* This captures the buffer so that we don't have to bind it
        * when we draw later on, we'll just have to bind the vao */
+      printf("vertex attrib pointer 1 %d\n", attr.type);
       switch (attr.type)
       {
          case GL_BYTE:
@@ -784,6 +785,7 @@ static void DrawBuffer_bind_attributes(DrawBuffer<T> *drawbuffer)
                   (GLvoid*)attr.offset);
             break;
       }
+      printf("vertex attrib pointer 2\n");
    }
 }
 
