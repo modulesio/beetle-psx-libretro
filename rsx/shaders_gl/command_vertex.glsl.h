@@ -11,29 +11,29 @@ static const char * command_vertex_name_ = GLSL_VERTEX "\n\
 // Vertex shader for rendering GPU draw commands in the framebuffer\n\
 in vec4 position;\n\
 in ivec3 color;\n\
-in ivec2 texture_page;\n\
-in ivec2 texture_coord;\n\
-in ivec2 clut;\n\
-in int texture_blend_mode;\n\
-in int depth_shift;\n\
-in int dither;\n\
-in int semi_transparent;\n\
-in ivec4 texture_window;\n\
-in ivec4 texture_limits;\n\
+in uvec2 texture_page;\n\
+in uvec2 texture_coord;\n\
+in uvec2 clut;\n\
+in uint texture_blend_mode;\n\
+in uint depth_shift;\n\
+in uint dither;\n\
+in uint semi_transparent;\n\
+in uvec4 texture_window;\n\
+in uvec4 texture_limits;\n\
 \n\
 // Drawing offset\n\
 uniform ivec2 offset;\n\
 \n\
 out vec3 frag_shading_color;\n\
-flat out ivec2 frag_texture_page;\n\
+flat out uvec2 frag_texture_page;\n\
 out vec2 frag_texture_coord;\n\
-flat out ivec2 frag_clut;\n\
-flat out int frag_texture_blend_mode;\n\
-flat out int frag_depth_shift;\n\
-flat out int frag_dither;\n\
-flat out int frag_semi_transparent;\n\
-flat out ivec4 frag_texture_window;\n\
-flat out ivec4 frag_texture_limits;\n\
+flat out uvec2 frag_clut;\n\
+flat out uint frag_texture_blend_mode;\n\
+flat out uint frag_depth_shift;\n\
+flat out uint frag_dither;\n\
+flat out uint frag_semi_transparent;\n\
+flat out uvec4 frag_texture_window;\n\
+flat out uvec4 frag_texture_limits;\n\
 "
 #if defined(FILTER_SABR) || defined(FILTER_XBR)
 "\n\

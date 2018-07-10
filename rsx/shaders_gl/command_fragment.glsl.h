@@ -20,58 +20,58 @@ static const char * command_fragment_name_ = GLSL_FRAGMENT "\n\
 uniform sampler2D fb_texture;\n\
 \n\
 // Scaling to apply to the dither pattern\n\
-uniform int dither_scaling;\n\
+uniform uint dither_scaling;\n\
 \n\
 // 0: Only draw opaque pixels, 1: only draw semi-transparent pixels\n\
-uniform int draw_semi_transparent;\n\
+uniform uint draw_semi_transparent;\n\
 \n\
-//uniform int mask_setor;\n\
-//uniform int mask_evaland;\n\
+//uniform uint mask_setor;\n\
+//uniform uint mask_evaland;\n\
 \n\
 in vec3 frag_shading_color;\n\
 // Texture page: base offset for texture lookup.\n\
-flat in ivec2 frag_texture_page;\n\
+flat in uvec2 frag_texture_page;\n\
 // Texel coordinates within the page. Interpolated by OpenGL.\n\
 in vec2 frag_texture_coord;\n\
 // Clut coordinates in VRAM\n\
-flat in ivec2 frag_clut;\n\
+flat in uvec2 frag_clut;\n\
 // 0: no texture, 1: raw-texture, 2: blended\n\
-flat in int frag_texture_blend_mode;\n\
+flat in uint frag_texture_blend_mode;\n\
 // 0: 16bpp (no clut), 1: 8bpp, 2: 4bpp\n\
-flat in int frag_depth_shift;\n\
+flat in uint frag_depth_shift;\n\
 // 0: No dithering, 1: dithering enabled\n\
-flat in int frag_dither;\n\
+flat in uint frag_dither;\n\
 // 0: Opaque primitive, 1: semi-transparent primitive\n\
-flat in int frag_semi_transparent;\n\
+flat in uint frag_semi_transparent;\n\
 // Texture window: [ X mask, X or, Y mask, Y or ]\n\
-flat in ivec4 frag_texture_window;\n\
+flat in uvec4 frag_texture_window;\n\
 // Texture limits: [Umin, Vmin, Umax, Vmax]\n\
-flat in ivec4 frag_texture_limits;\n\
+flat in uvec4 frag_texture_limits;\n\
 \n\
 out vec4 frag_color;\n\
 \n\
-const int BLEND_MODE_NO_TEXTURE    = 0;\n\
-const int BLEND_MODE_RAW_TEXTURE   = 1;\n\
-const int BLEND_MODE_TEXTURE_BLEND = 2;\n\
+const uint BLEND_MODE_NO_TEXTURE    = 0u;\n\
+const uint BLEND_MODE_RAW_TEXTURE   = 1u;\n\
+const uint BLEND_MODE_TEXTURE_BLEND = 2u;\n\
 \n\
-const int FILTER_MODE_NEAREST      = 0;\n\
-const int FILTER_MODE_SABR         = 1;\n\
+const uint FILTER_MODE_NEAREST      = 0u;\n\
+const uint FILTER_MODE_SABR         = 1u;\n\
 \n\
 // Read a pixel in VRAM\n\
-vec4 vram_get_pixel(int x, int y) {\n\
-  x = (x & 0x3ff);\n\
-  y = (y & 0x1ff);\n\
+vec4 vram_get_pixel(uint x, uint y) {\n\
+  x = (x & 0x3ffu);\n\
+  y = (y & 0x1ffu);\n\
 \n\
   return texelFetch(fb_texture, ivec2(x, y), 0);\n\
 }\n\
 \n\
 // Take a normalized color and convert it into a 16bit 1555 ABGR\n\
 // integer in the format used internally by the Playstation GPU.\n\
-int rebuild_psx_color(vec4 color) {\n\
-  int a = int(floor(color.a + 0.5));\n\
-  int r = int(floor(color.r * 31. + 0.5));\n\
-  int g = int(floor(color.g * 31. + 0.5));\n\
-  int b = int(floor(color.b * 31. + 0.5));\n\
+uint rebuild_psx_color(vec4 color) {\n\
+  uint a = uint(floor(color.a + 0.5));\n\
+  uint r = uint(floor(color.r * 31. + 0.5));\n\
+  uint g = uint(floor(color.g * 31. + 0.5));\n\
+  uint b = uint(floor(color.b * 31. + 0.5));\n\
 \n\
   // return (r << 11) | (g << 6) | (b << 1) | a;\n\
   return (a << 15) | (b << 10) | (g << 5) | r;\n\
@@ -82,7 +82,7 @@ int rebuild_psx_color(vec4 color) {\n\
 // want black you have to use an opaque draw command and use `0x8000`\n\
 // instead.\n\
 bool is_transparent(vec4 texel) {\n\
-  return rebuild_psx_color(texel) == 0;\n\
+  return rebuild_psx_color(texel) == 0u;\n\
 }\n\
 \n\
 // PlayStation dithering pattern. The offset is selected based on the\n\
@@ -97,29 +97,29 @@ const int dither_pattern[16] =\n\
 \n\
 vec4 sample_texel(vec2 coords) {\n\
    // Number of texel per VRAM 16bit 'pixel' for the current depth\n\
-   int pix_per_hw = 1 << frag_depth_shift;\n\
+   uint pix_per_hw = 1u << frag_depth_shift;\n\
 \n\
    // Texture pages are limited to 256x256 pixels\n\
-   int tex_x = clamp(int(coords.x), 0x0, 0xff);\n\
-   int tex_y = clamp(int(coords.y), 0x0, 0xff);\n\
+   uint tex_x = clamp(uint(coords.x), 0x0u, 0xffu);\n\
+   uint tex_y = clamp(uint(coords.y), 0x0u, 0xffu);\n\
 \n\
    // Clamp to primitive limits\n\
-   tex_x = clamp(tex_x, frag_texture_limits[0], frag_texture_limits[2] - 1);\n\
-   tex_y = clamp(tex_y, frag_texture_limits[1], frag_texture_limits[3] - 1);\n\
+   tex_x = clamp(tex_x, frag_texture_limits[0], frag_texture_limits[2] - 1u);\n\
+   tex_y = clamp(tex_y, frag_texture_limits[1], frag_texture_limits[3] - 1u);\n\
 \n\
    // Texture window adjustments\n\
    tex_x = (tex_x & frag_texture_window[0]) | frag_texture_window[1];\n\
    tex_y = (tex_y & frag_texture_window[2]) | frag_texture_window[3];\n\
 \n\
    // Adjust x coordinate based on the texel color depth.\n\
-   int tex_x_pix = tex_x / pix_per_hw;\n\
+   uint tex_x_pix = tex_x / pix_per_hw;\n\
 \n\
    tex_x_pix += frag_texture_page.x;\n\
    tex_y += frag_texture_page.y;\n\
 \n\
    vec4 texel = vram_get_pixel(tex_x_pix, tex_y);\n\
 \n\
-   if (frag_depth_shift > 0) {\n\
+   if (frag_depth_shift > 0u) {\n\
       // 8 and 4bpp textures are paletted so we need to lookup the\n\
       // real color in the CLUT\n\
 \n\
@@ -127,7 +127,7 @@ vec4 sample_texel(vec2 coords) {\n\
       // 'pixel'\n\
       float tex_x_float = coords.x / float(pix_per_hw);\n\
 \n\
-      int icolor = rebuild_psx_color(texel);\n\
+      uint icolor = rebuild_psx_color(texel);\n\
 \n\
       // A little bitwise magic to get the index in the CLUT. 4bpp\n\
       // textures have 4 texels per VRAM 'pixel', 8bpp have 2. We need\n\
@@ -135,22 +135,22 @@ vec4 sample_texel(vec2 coords) {\n\
       // halfword and then mask away the rest.\n\
 \n\
       // Bits per pixel (4 or 8)\n\
-      int bpp = 16 >> frag_depth_shift;\n\
+      uint bpp = 16u >> frag_depth_shift;\n\
 \n\
       // 0xf for 4bpp, 0xff for 8bpp\n\
-      int mask = ((1 << bpp) - 1);\n\
+      uint mask = ((1u << bpp) - 1u);\n\
 \n\
       // 0...3 for 4bpp, 0...1 for 8bpp\n\
-      int align = tex_x & ((1 << frag_depth_shift) - 1);\n\
+      uint align = tex_x & ((1u << frag_depth_shift) - 1u);\n\
 \n\
       // 0, 4, 8 or 12 for 4bpp, 0 or 8 for 8bpp\n\
-      int shift = (align * bpp);\n\
+      uint shift = (align * bpp);\n\
 \n\
       // Finally we have the index in the CLUT\n\
-      int index = (icolor >> shift) & mask;\n\
+      uint index = (icolor >> shift) & mask;\n\
 \n\
-      int clut_x = frag_clut.x + index;\n\
-      int clut_y = frag_clut.y;\n\
+      uint clut_x = frag_clut.x + index;\n\
+      uint clut_y = frag_clut.y;\n\
 \n\
       // Look up the real color for the texel in the CLUT\n\
       texel = vram_get_pixel(clut_x, clut_y);\n\
@@ -693,9 +693,9 @@ void main() {\n\
          // Bit 15 (stored in the alpha) is used as a flag for\n\
          // semi-transparency, but only if this is a semi-transparent draw\n\
          // command\n\
-         int transparency_flag = int(floor(texel0.a + 0.5));\n\
+         uint transparency_flag = uint(floor(texel0.a + 0.5));\n\
 \n\
-         int is_texel_semi_transparent = transparency_flag & frag_semi_transparent;\n\
+         uint is_texel_semi_transparent = transparency_flag & frag_semi_transparent;\n\
 \n\
          if (is_texel_semi_transparent != draw_semi_transparent) {\n\
             // We're not drawing those texels in this pass, discard\n\
@@ -717,13 +717,13 @@ void main() {\n\
       }\n\
 \n\
    // 4x4 dithering pattern scaled by `dither_scaling`\n\
-   int x_dither = (int(gl_FragCoord.x) / dither_scaling) & 3;\n\
-   int y_dither = (int(gl_FragCoord.y) / dither_scaling) & 3;\n\
+   uint x_dither = (uint(gl_FragCoord.x) / dither_scaling) & 3u;\n\
+   uint y_dither = (uint(gl_FragCoord.y) / dither_scaling) & 3u;\n\
 \n\
    // The multiplication by `frag_dither` will result in\n\
    // `dither_offset` being 0 if dithering is disabled\n\
    int dither_offset =\n\
-      dither_pattern[y_dither * 4 + x_dither] * int(frag_dither);\n\
+      dither_pattern[y_dither * 4u + x_dither] * int(frag_dither);\n\
 \n\
    float dither = float(dither_offset) / 255.;\n\
 \n\

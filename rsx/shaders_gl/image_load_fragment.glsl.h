@@ -2,7 +2,7 @@
 
 static const char *image_load_fragment = GLSL_FRAGMENT "\n\
       uniform sampler2D fb_texture;\n\
-      uniform int internal_upscaling;\n\
+      uniform uint internal_upscaling;\n\
       in vec2 frag_fb_coord;\n\
       out vec4 frag_color;\n\
 \n\

@@ -5,7 +5,7 @@ static const char *image_load_vertex = GLSL_VERTEX "\n\
       // into the output framebuffer\n\
 \n\
       // The position in the input and output framebuffer are the same\n\
-      in ivec2 position;\n\
+      in uvec2 position;\n\
       out vec2 frag_fb_coord;\n\
 \n\
       void main() {\n\
