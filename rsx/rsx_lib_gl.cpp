@@ -1219,8 +1219,8 @@ static void GlRenderer_upload_textures(
 
    glDisable(GL_SCISSOR_TEST);
    glDisable(GL_BLEND);
-   glCullFace(GL_FRONT_AND_BACK);
    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   glDisable(GL_CULL_FACE);
 
    /* Bind the output framebuffer */
    /* let _fb = Framebuffer::new(&self.fb_out); */
@@ -1230,8 +1230,8 @@ static void GlRenderer_upload_textures(
    if (!DRAWBUFFER_IS_EMPTY(renderer->image_load_buffer))
       DrawBuffer_draw(renderer->image_load_buffer, GL_TRIANGLE_STRIP);
 
-   glCullFace(GL_FRONT_AND_BACK);
    // glPolygonMode(GL_FRONT_AND_BACK, renderer->command_polygon_mode);
+   glDisable(GL_CULL_FACE);
    glEnable(GL_SCISSOR_TEST);
 
    get_error("GlRenderer_upload_textures");
@@ -2230,8 +2230,8 @@ void rsx_gl_prepare_frame(void)
    /* In case we're upscaling we need to increase the line width
     * proportionally */
    glLineWidth((GLfloat)renderer->internal_upscaling);
-   glCullFace(GL_FRONT_AND_BACK);
    // glPolygonMode(GL_FRONT_AND_BACK, renderer->command_polygon_mode);
+   glDisable(GL_CULL_FACE);
    glEnable(GL_SCISSOR_TEST);
    glEnable(GL_DEPTH_TEST);
    glDepthFunc(GL_LEQUAL);
@@ -2265,8 +2265,8 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
    bind_libretro_framebuffer(renderer);
 
    glDisable(GL_SCISSOR_TEST);
-   glCullFace(GL_FRONT_AND_BACK);
    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_BLEND);
 
@@ -2352,8 +2352,8 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
 
       glDisable(GL_SCISSOR_TEST);
       glDisable(GL_BLEND);
-      glCullFace(GL_FRONT_AND_BACK);
       // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      glDisable(GL_CULL_FACE);
 
       Framebuffer_init(&_fb, &renderer->fb_texture);
 
@@ -2996,8 +2996,8 @@ void rsx_gl_load_image( uint16_t x, uint16_t y,
 
    glDisable(GL_SCISSOR_TEST);
    glDisable(GL_BLEND);
-   glCullFace(GL_FRONT_AND_BACK);
    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   glDisable(GL_CULL_FACE);
 
    /* Bind the output framebuffer */
    Framebuffer_init(&_fb, &renderer->fb_out);
@@ -3005,8 +3005,8 @@ void rsx_gl_load_image( uint16_t x, uint16_t y,
    if (!DRAWBUFFER_IS_EMPTY(renderer->image_load_buffer))
       DrawBuffer_draw(renderer->image_load_buffer, GL_TRIANGLE_STRIP);
 
-   glCullFace(GL_FRONT_AND_BACK);
    // glPolygonMode(GL_FRONT_AND_BACK, renderer->command_polygon_mode);
+   glDisable(GL_CULL_FACE);
    glEnable(GL_SCISSOR_TEST);
 
    get_error("rsx_gl_load_image");
