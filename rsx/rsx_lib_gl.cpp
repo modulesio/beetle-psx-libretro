@@ -791,10 +791,8 @@ static void DrawBuffer_bind_attributes(DrawBuffer<T> *drawbuffer)
 
    template<typename T>
 static void DrawBuffer_new(DrawBuffer<T> *drawbuffer,
-      const char *vertex_shader, const char *fragment_shader, size_t capacity)
+      const char *vertex_shader, const char *fragment_shader, size_t capacity, bool indexed)
 {
-   GLuint id = 0;
-   size_t element_size = sizeof(T);
    Shader vs, fs;
    Program* program    = new Program;
 
@@ -808,32 +806,23 @@ static void DrawBuffer_new(DrawBuffer<T> *drawbuffer,
    Shader_free(&fs);
    Shader_free(&vs);
 
-   // glGenVertexArrays(1, &id);
+   GLuint vao = 0;
+   glGenVertexArrays(1, &vao);
+   glBindVertexArray(vao);
 
    drawbuffer->map       = NULL;
-   drawbuffer->vao       = id;
-
-   id                    = 0;
+   drawbuffer->vao       = vao;
 
    /* Generate the buffer object */
+   GLuint id = 0;
    glGenBuffers(1, &id);
+   glBindBuffer(GL_ARRAY_BUFFER, id);
+   /* We allocate enough space for 3 times the buffer space and
+    * we only remap one third of it at a time */
 
    drawbuffer->program  = program;
    drawbuffer->capacity = capacity;
    drawbuffer->id       = id;
-
-   /* Create and map the buffer */
-   glBindBuffer(GL_ARRAY_BUFFER, id);
-
-   /* We allocate enough space for 3 times the buffer space and
-    * we only remap one third of it at a time */
-   GLsizeiptr storage_size = drawbuffer->capacity * element_size * 3;
-
-   /* Since we store indexes in unsigned shorts we want to make
-    * sure the entire buffer is indexable. */
-   assert(drawbuffer->capacity * 3 <= 0xffff);
-
-   glBufferData(GL_ARRAY_BUFFER, storage_size, NULL, GL_DYNAMIC_DRAW);
 
    DrawBuffer_bind_attributes<T>(drawbuffer);
 
@@ -842,9 +831,14 @@ static void DrawBuffer_new(DrawBuffer<T> *drawbuffer,
 
    DrawBuffer_map__no_bind(drawbuffer);
 
-   glGenBuffers(1, &drawbuffer->element_array_buffer);
-   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawbuffer->element_array_buffer);
-   glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * INDEX_BUFFER_LEN * sizeof(GLushort), nullptr, GL_DYNAMIC_DRAW);
+   if (indexed) {
+     glGenBuffers(1, &drawbuffer->element_array_buffer);
+     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawbuffer->element_array_buffer);
+     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * INDEX_BUFFER_LEN * sizeof(GLushort), nullptr, GL_DYNAMIC_DRAW);
+  } else {
+    drawbuffer->element_array_buffer = 0;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  }
 }
 
 static void Framebuffer_init(struct Framebuffer *fb,
@@ -978,10 +972,11 @@ static void Texture_set_sub_image_window(
    template<typename T>
 static DrawBuffer<T>* DrawBuffer_build( const char* vertex_shader,
       const char* fragment_shader,
-      size_t capacity)
+      size_t capacity,
+      bool indexed)
 {
    DrawBuffer<T> *t = new DrawBuffer<T>;
-   DrawBuffer_new<T>(t, vertex_shader, fragment_shader, capacity);
+   DrawBuffer_new<T>(t, vertex_shader, fragment_shader, capacity, indexed);
 
    return t;
 }
@@ -1049,10 +1044,9 @@ static void GlRenderer_draw(GlRenderer *renderer)
           * must be handled by the caller. This is because this command
           * can be called several times on the same buffer (i.e. multiple
           * draw calls between the prepare/finalize) */
-         GLsizei indexSize = opaque_triangle_len * sizeof(GLushort);
-         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, opaque_triangle_indices);
-         glDrawElements(GL_TRIANGLES, opaque_triangle_len, GL_UNSIGNED_SHORT, 0);
-         indexOffset += indexSize;
+         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset * sizeof(GLushort), opaque_triangle_len * sizeof(GLushort), opaque_triangle_indices);
+         glDrawElements(GL_TRIANGLES, opaque_triangle_len, GL_UNSIGNED_SHORT, (void *)(indexOffset * sizeof(GLushort)));
+         indexOffset += opaque_triangle_len;
       }
    }
 
@@ -1070,10 +1064,9 @@ static void GlRenderer_draw(GlRenderer *renderer)
           * must be handled by the caller. This is because this command
           * can be called several times on the same buffer (i.e. multiple
           * draw calls between the prepare/finalize) */
-         GLsizei indexSize = opaque_line_len * sizeof(GLushort);
-         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, opaque_line_indices);
-         glDrawElements(GL_LINES, opaque_line_len, GL_UNSIGNED_SHORT, 0);
-         indexOffset += indexSize;
+         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset * sizeof(GLushort), opaque_line_len * sizeof(GLushort), opaque_line_indices);
+         glDrawElements(GL_LINES, opaque_line_len, GL_UNSIGNED_SHORT, (void *)(indexOffset * sizeof(GLushort)));
+         indexOffset += opaque_line_len;
       }
    }
 
@@ -1148,10 +1141,9 @@ static void GlRenderer_draw(GlRenderer *renderer)
              * must be handled by the caller. This is because this command
              * can be called several times on the same buffer (i.e. multiple
              * draw calls between the prepare/finalize) */
-            GLsizei indexSize = len * sizeof(GLushort);
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset, indexSize, indices);
-            glDrawElements(it->draw_mode, len, GL_UNSIGNED_SHORT, 0);
-            indexOffset += indexSize;
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexOffset * sizeof(GLushort), len * sizeof(GLushort), indices);
+            glDrawElements(it->draw_mode, len, GL_UNSIGNED_SHORT, (void *)(indexOffset * sizeof(GLushort)));
+            indexOffset += len;
          }
 
          cur_index = it->last_index;
@@ -1343,51 +1335,59 @@ static bool GlRenderer_new(GlRenderer *renderer, DrawConfig config)
          command_buffer = DrawBuffer_build<CommandVertex>(
                command_vertex_xbr,
                command_fragment_sabr,
-               VERTEX_BUFFER_LEN);
+               VERTEX_BUFFER_LEN,
+               true);
          break;
       case FILTER_MODE_XBR:
          command_buffer = DrawBuffer_build<CommandVertex>(
                command_vertex_xbr,
                command_fragment_xbr,
-               VERTEX_BUFFER_LEN);
+               VERTEX_BUFFER_LEN,
+               true);
          break;
       case FILTER_MODE_BILINEAR:
          command_buffer = DrawBuffer_build<CommandVertex>(
                command_vertex,
                command_fragment_bilinear,
-               VERTEX_BUFFER_LEN);
+               VERTEX_BUFFER_LEN,
+               true);
          break;
       case FILTER_MODE_3POINT:
          command_buffer = DrawBuffer_build<CommandVertex>(
                command_vertex,
                command_fragment_3point,
-               VERTEX_BUFFER_LEN);
+               VERTEX_BUFFER_LEN,
+               true);
          break;
       case FILTER_MODE_JINC2:
          command_buffer = DrawBuffer_build<CommandVertex>(
                command_vertex,
                command_fragment_jinc2,
-               VERTEX_BUFFER_LEN);
+               VERTEX_BUFFER_LEN,
+               true);
          break;
       case FILTER_MODE_NEAREST:
       default:
          command_buffer = DrawBuffer_build<CommandVertex>(
                command_vertex,
                command_fragment,
-               VERTEX_BUFFER_LEN);
+               VERTEX_BUFFER_LEN,
+               true);
    }
 
    DrawBuffer<OutputVertex>* output_buffer =
       DrawBuffer_build<OutputVertex>(
             output_vertex,
             output_fragment,
-            4);
+            4,
+            false);
 
    DrawBuffer<ImageLoadVertex>* image_load_buffer =
       DrawBuffer_build<ImageLoadVertex>(
             image_load_vertex,
             image_load_fragment,
-            4);
+            4,
+            false);
 
    uint32_t native_width  = (uint32_t) VRAM_WIDTH_PIXELS;
    uint32_t native_height = (uint32_t) VRAM_HEIGHT;
