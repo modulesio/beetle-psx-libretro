@@ -995,11 +995,9 @@ static void GlRenderer_draw(GlRenderer *renderer)
    x = renderer->config.draw_offset[0];
    y = renderer->config.draw_offset[1];
 
-   if (renderer->command_buffer->program)
+   if (renderer->command_buffer->program) {
       glUseProgram(renderer->command_buffer->program->id);
 
-   if (renderer->command_buffer->program)
-   {
       glUniform2i(renderer->command_buffer->program->uniforms["offset"], (GLint)x, (GLint)y);
       /* We use texture unit 0 */
       glUniform1i(renderer->command_buffer->program->uniforms["fb_texture"], 0);
