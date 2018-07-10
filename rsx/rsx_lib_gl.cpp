@@ -625,7 +625,7 @@ static void DrawBuffer_push_slice(DrawBuffer<T> *drawbuffer, T slice[], size_t n
    // assert(drawbuffer->map != NULL);
 
    glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
-   glBufferSubData(GL_ARRAY_BUFFER, drawbuffer->map_index * sizeof(T), n * sizeof(T), slice);
+   glBufferSubData(GL_ARRAY_BUFFER, (drawbuffer->map_start + drawbuffer->map_index) * sizeof(T), n * sizeof(T), slice);
    /* memcpy(  drawbuffer->map + drawbuffer->map_index,
             slice,
             n * sizeof(T)); */
