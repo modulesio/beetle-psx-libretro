@@ -817,6 +817,7 @@ static void DrawBuffer_new(DrawBuffer<T> *drawbuffer,
    GLuint id = 0;
    glGenBuffers(1, &id);
    glBindBuffer(GL_ARRAY_BUFFER, id);
+   glBufferData(GL_ARRAY_BUFFER, 3 * capacity * sizeof(T), NULL, GL_DYNAMIC_DRAW);
    /* We allocate enough space for 3 times the buffer space and
     * we only remap one third of it at a time */
 
