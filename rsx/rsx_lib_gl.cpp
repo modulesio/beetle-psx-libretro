@@ -247,6 +247,9 @@ struct GlRenderer {
    /* Buffer used to copy textures from 'fb_texture' to 'fb_out' */
    DrawBuffer<ImageLoadVertex>* image_load_buffer;
 
+   CommandVertex command_vertices[3 * INDEX_BUFFER_LEN];
+   ImageLoadVertex image_load_vertices[3 * INDEX_BUFFER_LEN];
+   OutputVertex output_vertices[3 * INDEX_BUFFER_LEN];
    GLushort opaque_triangle_indices[INDEX_BUFFER_LEN];
    GLushort opaque_line_indices[INDEX_BUFFER_LEN];
    GLushort semi_transparent_indices[INDEX_BUFFER_LEN];
@@ -616,7 +619,7 @@ static void DrawBuffer_disable_attribute(DrawBuffer<T> *drawbuffer, const char* 
 }
 
    template<typename T>
-static void DrawBuffer_push_slice(DrawBuffer<T> *drawbuffer, T slice[], size_t n)
+static void DrawBuffer_push_slice(DrawBuffer<T> *drawbuffer, T *vertices, T slice[], size_t n)
 {
    if (!drawbuffer)
       return;
@@ -624,8 +627,9 @@ static void DrawBuffer_push_slice(DrawBuffer<T> *drawbuffer, T slice[], size_t n
    assert(n <= DRAWBUFFER_REMAINING_CAPACITY(drawbuffer));
    // assert(drawbuffer->map != NULL);
 
-   glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
-   glBufferSubData(GL_ARRAY_BUFFER, (drawbuffer->map_start + drawbuffer->map_index) * sizeof(T), n * sizeof(T), slice);
+   memcpy(vertices + drawbuffer->map_start + drawbuffer->map_index, slice, n * sizeof(T));
+   // glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
+   // glBufferSubData(GL_ARRAY_BUFFER, (drawbuffer->map_start + drawbuffer->map_index) * sizeof(T), n * sizeof(T), slice);
    /* memcpy(  drawbuffer->map + drawbuffer->map_index,
             slice,
             n * sizeof(T)); */
@@ -634,7 +638,7 @@ static void DrawBuffer_push_slice(DrawBuffer<T> *drawbuffer, T slice[], size_t n
 }
 
    template<typename T>
-static void DrawBuffer_draw(DrawBuffer<T> *drawbuffer, GLenum mode)
+static void DrawBuffer_draw(DrawBuffer<T> *drawbuffer, T *vertices, GLenum mode)
 {
    // glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
    /* Unmap the active buffer */
@@ -648,6 +652,8 @@ static void DrawBuffer_draw(DrawBuffer<T> *drawbuffer, GLenum mode)
    glUseProgram(drawbuffer->program->id);
 
    /* Length in number of vertices */
+   glBindBuffer(GL_ARRAY_BUFFER, drawbuffer->id);
+   glBufferSubData(GL_ARRAY_BUFFER, drawbuffer->map_start * sizeof(T), drawbuffer->map_index * sizeof(T), vertices + drawbuffer->map_start);
    glDrawArrays(mode, drawbuffer->map_start, drawbuffer->map_index);
 
    drawbuffer->map_start += drawbuffer->map_index;
@@ -1026,6 +1032,8 @@ static void GlRenderer_draw(GlRenderer *renderer)
    /* The VAO needs to be bound here or the glDrawElements calls
     * will error out on some systems */
    glBindVertexArray(renderer->command_buffer->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, renderer->command_buffer->id);
+   glBufferSubData(GL_ARRAY_BUFFER, renderer->command_buffer->map_start * sizeof(CommandVertex), renderer->command_buffer->map_index * sizeof(CommandVertex), renderer->command_vertices + renderer->command_buffer->map_start);
 
    renderer->command_buffer->map = NULL;
 
@@ -1199,7 +1207,7 @@ static void GlRenderer_upload_textures(
       {   {x_end,     y_end   }   }
    };
 
-   DrawBuffer_push_slice(renderer->image_load_buffer, slice, slice_len);
+   DrawBuffer_push_slice(renderer->image_load_buffer, renderer->image_load_vertices, slice, slice_len);
 
    if (renderer->image_load_buffer->program)
    {
@@ -1223,7 +1231,7 @@ static void GlRenderer_upload_textures(
    Framebuffer_init(&_fb, &renderer->fb_out);
 
    if (!DRAWBUFFER_IS_EMPTY(renderer->image_load_buffer))
-      DrawBuffer_draw(renderer->image_load_buffer, GL_TRIANGLE_STRIP);
+      DrawBuffer_draw(renderer->image_load_buffer, renderer->image_load_vertices, GL_TRIANGLE_STRIP);
 
    // glPolygonMode(GL_FRONT_AND_BACK, renderer->command_polygon_mode);
    glDisable(GL_CULL_FACE);
@@ -1882,7 +1890,7 @@ static void push_primitive(
       index++;
    }
 
-   DrawBuffer_push_slice(renderer->command_buffer, v, count);
+   DrawBuffer_push_slice(renderer->command_buffer, renderer->command_vertices, v, count);
 }
 
 std::vector<Attribute> CommandVertex::attributes()
@@ -2316,7 +2324,7 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
             { { 1.0,  1.0}, {fb_width,  0} }
          };
 
-         DrawBuffer_push_slice(renderer->output_buffer, slice, 4);
+         DrawBuffer_push_slice(renderer->output_buffer, renderer->output_vertices, slice, 4);
 
          if (renderer->output_buffer->program)
          {
@@ -2330,7 +2338,7 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
          }
 
          if (!DRAWBUFFER_IS_EMPTY(renderer->output_buffer))
-            DrawBuffer_draw(renderer->output_buffer, GL_TRIANGLE_STRIP);
+            DrawBuffer_draw(renderer->output_buffer, renderer->output_vertices, GL_TRIANGLE_STRIP);
       }
    }
 
@@ -2347,7 +2355,7 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
          {   {1023, 511   }   },
       };
 
-      DrawBuffer_push_slice(renderer->image_load_buffer, slice, 4);
+      DrawBuffer_push_slice(renderer->image_load_buffer, renderer->image_load_vertices, slice, 4);
 
       if (renderer->image_load_buffer->program)
       {
@@ -2369,7 +2377,7 @@ void rsx_gl_finalize_frame(const void *fb, unsigned width,
       }
 
       if (!DRAWBUFFER_IS_EMPTY(renderer->image_load_buffer))
-         DrawBuffer_draw(renderer->image_load_buffer, GL_TRIANGLE_STRIP);
+         DrawBuffer_draw(renderer->image_load_buffer, renderer->image_load_vertices, GL_TRIANGLE_STRIP);
 
       glDeleteFramebuffers(1, &_fb.id);
    }
@@ -2625,7 +2633,7 @@ void rsx_gl_push_quad(  float p0x, float p0y, float p0w,
       }
    }
 
-   DrawBuffer_push_slice(renderer->command_buffer, v, 4);
+   DrawBuffer_push_slice(renderer->command_buffer, renderer->command_vertices, v, 4);
 }
 
 void rsx_gl_push_triangle( float p0x, float p0y, float p0w,
@@ -2989,7 +2997,7 @@ void rsx_gl_load_image( uint16_t x, uint16_t y,
       {   {x_end,     y_end   }   }
    };
 
-   DrawBuffer_push_slice(renderer->image_load_buffer, slice, slice_len);
+   DrawBuffer_push_slice(renderer->image_load_buffer, renderer->image_load_vertices, slice, slice_len);
 
    if (renderer->image_load_buffer->program)
    {
@@ -3008,7 +3016,7 @@ void rsx_gl_load_image( uint16_t x, uint16_t y,
    Framebuffer_init(&_fb, &renderer->fb_out);
 
    if (!DRAWBUFFER_IS_EMPTY(renderer->image_load_buffer))
-      DrawBuffer_draw(renderer->image_load_buffer, GL_TRIANGLE_STRIP);
+      DrawBuffer_draw(renderer->image_load_buffer, renderer->image_load_vertices, GL_TRIANGLE_STRIP);
 
    // glPolygonMode(GL_FRONT_AND_BACK, renderer->command_polygon_mode);
    glDisable(GL_CULL_FACE);
