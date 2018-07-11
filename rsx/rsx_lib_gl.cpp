@@ -1556,7 +1556,8 @@ static inline void apply_scissor(GlRenderer *renderer)
    GLsizei w = (GLsizei) _w * upscale;
    GLsizei h = (GLsizei) _h * upscale;
 
-   glScissor(x, y, w, h);
+   // glScissor(x, y, w, h);
+   glScissor(0, 0, 1280, 1024);
 }
 
 static void bind_libretro_framebuffer(GlRenderer *renderer)
@@ -1615,7 +1616,8 @@ static void bind_libretro_framebuffer(GlRenderer *renderer)
 
    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 
-   glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+   // glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+   glViewport(0, 0, 1280, 1024);
 }
 
 static bool retro_refresh_variables(GlRenderer *renderer)
