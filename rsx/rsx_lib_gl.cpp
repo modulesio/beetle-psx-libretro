@@ -898,7 +898,7 @@ static void Texture_init(
       GLenum format,
       GLenum type
 ) {
-   printf("Texture_init\n");
+   // printf("Texture_init\n");
 
    GLuint id = 0;
 
@@ -1036,7 +1036,7 @@ static void GlRenderer_draw(GlRenderer *renderer)
 
    GLsizei indexOffset = 0;
 
-   printf("draw opaque triangle %d\n", opaque_triangle_len);
+   // printf("draw opaque triangle %d\n", opaque_triangle_len);
    if (opaque_triangle_len)
    {
       if (!DRAWBUFFER_IS_EMPTY(renderer->command_buffer))
@@ -1056,7 +1056,7 @@ static void GlRenderer_draw(GlRenderer *renderer)
    GLsizei opaque_line_len =
       INDEX_BUFFER_LEN - renderer->opaque_line_index_pos - 1;
 
-   printf("draw opaque line %d\n", opaque_line_len);
+   // printf("draw opaque line %d\n", opaque_line_len);
    if (opaque_line_len)
    {
       if (!DRAWBUFFER_IS_EMPTY(renderer->command_buffer))
@@ -1071,7 +1071,7 @@ static void GlRenderer_draw(GlRenderer *renderer)
       }
    }
 
-   printf("draw semi transparent %d\n", renderer->semi_transparent_index_pos);
+   // printf("draw semi transparent %d\n", renderer->semi_transparent_index_pos);
    if (renderer->semi_transparent_index_pos > 0)
    {
       TransparencyIndex ti;
@@ -1151,7 +1151,7 @@ static void GlRenderer_draw(GlRenderer *renderer)
       }
    }
 
-   printf("drew total %d\n", renderer->command_buffer->map_index);
+   // printf("drew total %d\n", renderer->command_buffer->map_index);
    renderer->command_buffer->map_start += renderer->command_buffer->map_index;
    renderer->command_buffer->map_index  = 0;
    DrawBuffer_map__no_bind(renderer->command_buffer);
