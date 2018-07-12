@@ -1619,8 +1619,6 @@ static void bind_libretro_framebuffer(GlRenderer *renderer)
 
    /* Bind the output framebuffer provided by the frontend */
    fbo = glsm_get_current_framebuffer();
-   fbo = 0;
-
    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 
    glViewport(0, 0, (GLsizei) w, (GLsizei) h);
